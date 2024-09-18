@@ -2,19 +2,23 @@ const axios = require('axios');
 const dotenv = require('dotenv');
 const readline = require('readline');
 dotenv.config();
-const { PROTOCOL, BASE_URL, APP_ID, IDIOM, UNITS, Q} = process.env;
+const { PROTOCOL, BASE_URL, APP_ID, Q, LIMIT} = process.env;
 
-const getCityCoordinates = (cidade) => {
-    const url = `${PROTOCOL}://${BASE_URL}?q=${cidade}&appid=${APP_ID}&lang=${IDIOM}&units=${UNITS}`;
+const getCityCoordinates = (cityName) => {
+    const url = `${PROTOCOL}://${BASE_URL}?q=${cityName}&limit=${LIMIT}&appid=${APP_ID}`;
 
     return axios.get(url)
         .then(response => {
-            const { coord } = response.data;
-            console.log(`Coordenadas de ${cidade}: Latitude: ${coord.lat}, Longitude: ${coord.lon}`);
-            return coord;
+            if (response.data.length === 0) {
+                console.log(`Cidade "${cityName}" não encontrada.`);
+                return null;
+            }
+            const { lat, lon } = response.data[0];
+            console.log(`Coordenadas de ${cityName}: Latitude: ${lat}, Longitude: ${lon}`);
+            return { lat, lon };
         })
         .catch(error => {
-            console.error(`Erro ao obter coordenadas de ${cidade}:`, error.message);
+            console.log(`Erro ao buscar a cidade: ${error.message}`);
         });
 };
 
